@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
 using Byte = unsigned char;
 using Word = unsigned short;
@@ -18,6 +19,21 @@ struct Mem{
             Data[i] = 0;
         }
     }
+
+    // read 1 byte
+    Byte operator[](u32 Address) const{
+
+        // assert here Address is < MAX_MEM
+        return Data[Address];
+    }
+
+    // write 1 byte
+    Byte& operator[](u32 Address){
+
+        // assert here Address is < MAX_MEM
+        return Data[Address];
+    }
+
 
 };
 
@@ -54,14 +70,49 @@ struct CPU{
 
     }
 
+    Byte FetchByte(u32& Cycles, Mem& memory){
+        Byte Data = memory[PC]; //get data from PC
+        PC++; //Increment counter
+        Cycles--; //used up one cycle
+        return Data;
+    }
+
+    //opcodes
+    static constexpr Byte INS_LDA_IM =0xA9; // Load Accumulator with Immediate
+
+    // Cycles: number of cycles needed to execute some instruction
+    void Execute(u32 Cycles, Mem& memory){
+        
+        while( Cycles > 0){
+            //fetch next instruction
+            Byte Ins = FetchByte( Cycles, memory );
+            switch (Ins){
+                case INS_LDA_IM:{
+                    // byte retrieved comes immediately after instruction opcode
+                    Byte Value = FetchByte (Cycles, memory);
+                    A = Value; // set accumulator to fetched value
+                    Z = (A == 0); // zero flag is set if A == 0
+                    N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
+                }break;
+                default:
+                {
+                    printf("Instruction not handeled %d", Ins);
+                }break;
+            }
+        }
+
+    }
+
 };
 
 int main(){
     
     Mem mem;
     CPU cpu;
-
     cpu.Reset(mem);
-
+    // start - inline a little program
+    mem[0xFFFC] = CPU::INS_LDA_IM;
+    mem[0xFFFD] = 0x42;
+    cpu.Execute(2,mem);
     return 0;
 }
