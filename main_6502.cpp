@@ -34,6 +34,12 @@ struct Mem{
         return Data[Address];
     }
 
+    // write 2 bytes 
+    void writeWord(Word Value, u32 Address, u32 Cycles){
+        Data[Address] = Value & 0xFF; //LSB
+        Data[Address + 1] = (Value >> 8); // MSB 
+        Cycles -= 2;
+    }
 
 };
 
@@ -85,10 +91,26 @@ struct CPU{
         return Data;
     }
 
+    Word FetchWord(u32& Cycles, Mem& memory){
+        
+        //6502 is little endian (first byte read is the LSB of data)
+        Word Data = memory[PC]; //get data from PC
+        PC++; //Increment counter
+
+        Data |= (memory[PC] << 8); //shift by 8 bytes and or with result
+        PC++; //Increment counter
+        
+        Cycles-=2; //used up one cycle
+        return Data;
+    }
+
+
     //opcodes
     static constexpr Byte 
-        INS_LDA_IM =0xA9, // Load Accumulator with Immediate
-        INS_LDA_ZP = 0xA5 // Load Accumulator with Zero Page (first 256 bytes of memory) 
+        INS_LDA_IM = 0xA9, // Load Accumulator with Immediate
+        INS_LDA_ZP = 0xA5, // Load Accumulator with Zero Page (first 256 bytes of memory) 
+        INS_LDA_ZPX = 0xB5, // Load Accumulator with given zero page address and adding the current value of X to the address
+        INS_JSR = 0x20, // Jump to Subroutine
         ;
 
     void LDAStatus(){
@@ -115,11 +137,29 @@ struct CPU{
 
                 // execute the load immediate with zero page instruction
                 case INS_LDA_ZP:{
-                    Byte ZeroPageAddress = FetchByte (Cycles, memory); // 1 clock cycle
-                    A = ReadByte(Cycles, ZeroPageAddress, memory); // 1 clock cycle 
+                    Byte ZeroPageAddr = FetchByte (Cycles, memory); // 1 clock cycle
+                    A = ReadByte(Cycles, ZeroPageAddr, memory); // 1 clock cycle 
                     LDAStatus(); // default LDA flag setting
 
                 }break;
+
+                // get zero page address, add value of X register to it, and load immediate with the resulting address 
+                case INS_LDA_ZPX:{
+                    Byte ZeroPageAddr = FetchByte(Cycles, memory); 
+                    ZeroPageAddr += X; // doesnt handle overflow
+                    Cycles --; // clock cycle for addition
+                    A = ReadByte(Cycles, ZeroPageAddr, memory); // 1 clock cycle 
+                    LDAStatus(); // default LDA flag setting
+                }break;
+
+                case INS_JSR:{
+                    Word SubAddress = FetchWord(Cycles, memory); //one cycle
+                    memory.writeWord(PC - 1);
+                    Cycles--;
+                    PC = SubAddress;
+                    Cycles--;
+                }break;
+
 
                 default:
                 {
