@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 
 using Byte = unsigned char;
 using Word = unsigned short;
@@ -35,7 +34,7 @@ struct Mem{
     }
 
     // write 2 bytes 
-    void writeWord(Word Value, u32 Address, u32 Cycles){
+    void WriteWord(Word Value, u32 Address, u32& Cycles){
         Data[Address] = Value & 0xFF; //LSB
         Data[Address + 1] = (Value >> 8); // MSB 
         Cycles -= 2;
@@ -100,7 +99,7 @@ struct CPU{
         Data |= (memory[PC] << 8); //shift by 8 bytes and or with result
         PC++; //Increment counter
         
-        Cycles-=2; //used up one cycle
+        Cycles -= 2; //used up two cycle
         return Data;
     }
 
@@ -110,7 +109,7 @@ struct CPU{
         INS_LDA_IM = 0xA9, // Load Accumulator with Immediate
         INS_LDA_ZP = 0xA5, // Load Accumulator with Zero Page (first 256 bytes of memory) 
         INS_LDA_ZPX = 0xB5, // Load Accumulator with given zero page address and adding the current value of X to the address
-        INS_JSR = 0x20, // Jump to Subroutine
+        INS_JSR = 0x20 // Jump to Subroutine
         ;
 
     void LDAStatus(){
@@ -152,12 +151,16 @@ struct CPU{
                     LDAStatus(); // default LDA flag setting
                 }break;
 
+                //jump to subroutine
                 case INS_JSR:{
-                    Word SubAddress = FetchWord(Cycles, memory); //one cycle
-                    memory.writeWord(PC - 1);
-                    Cycles--;
+                    //fetch address to go to
+                    Word SubAddress = FetchWord(Cycles, memory); //two cycles
+                    // Write address of PC - 1 to the Stack 
+                    memory.WriteWord(PC - 1, SP, Cycles); // two cycles 
+                    // set program counter to target memory address
                     PC = SubAddress;
                     Cycles--;
+                    SP++;
                 }break;
 
 
@@ -173,16 +176,3 @@ struct CPU{
     }
 
 };
-
-int main(){
-    
-    Mem mem;
-    CPU cpu;
-    cpu.Reset(mem);
-    // start - inline a little program
-    mem[0xFFFC] = CPU::INS_LDA_ZP;
-    mem[0xFFFD] = 0x42;
-    mem[0x0042] = 0x84;
-    cpu.Execute(3,mem);
-    return 0;
-}
