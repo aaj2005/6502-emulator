@@ -204,14 +204,20 @@ int main(){
     cpu.Reset(mem);
     // start - inline a little program
 <<<<<<< HEAD
+<<<<<<< HEAD
     mem[0xFFFC] = CPU::INS_LDA_IM;
     mem[0xFFFD] = 0x42;
     cpu.Execute(2,mem);
 =======
+=======
+>>>>>>> parent of ccd882d (code refactoring and organisation)
     mem[0xFFFC] = CPU::INS_LDA_ZP;
     mem[0xFFFD] = 0x42;
     mem[0x0042] = 0x84;
     cpu.Execute(3,mem);
+<<<<<<< HEAD
+>>>>>>> parent of ccd882d (code refactoring and organisation)
+=======
 >>>>>>> parent of ccd882d (code refactoring and organisation)
     return 0;
 }
