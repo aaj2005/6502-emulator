@@ -34,15 +34,12 @@ struct Mem{
         return Data[Address];
     }
 
-<<<<<<< HEAD
-=======
     // write 2 bytes 
-    void writeWord(Word Value, u32 Address, u32 Cycles){
+    void WriteWord(Word Value, u32 Address, u32 Cycles){
         Data[Address] = Value & 0xFF; //LSB
         Data[Address + 1] = (Value >> 8); // MSB 
         Cycles -= 2;
     }
->>>>>>> parent of ccd882d (code refactoring and organisation)
 
 };
 
@@ -86,10 +83,6 @@ struct CPU{
         return Data;
     }
 
-<<<<<<< HEAD
-    //opcodes
-    static constexpr Byte INS_LDA_IM =0xA9; // Load Accumulator with Immediate
-=======
 
     //fetch byte but without incrementing PC
     Byte ReadByte(u32& Cycles, Byte Address, Mem& memory){
@@ -124,24 +117,12 @@ struct CPU{
         Z = (A == 0); // zero flag is set if A == 0
         N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
     }
->>>>>>> parent of ccd882d (code refactoring and organisation)
 
     // Cycles: number of cycles needed to execute some instruction
     void Execute(u32 Cycles, Mem& memory){
         
         while( Cycles > 0){
             //fetch next instruction
-<<<<<<< HEAD
-            Byte Ins = FetchByte( Cycles, memory );
-            switch (Ins){
-                case INS_LDA_IM:{
-                    // byte retrieved comes immediately after instruction opcode
-                    Byte Value = FetchByte (Cycles, memory);
-                    A = Value; // set accumulator to fetched value
-                    Z = (A == 0); // zero flag is set if A == 0
-                    N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
-                }break;
-=======
             Byte Ins = FetchByte( Cycles, memory ); // 1 clock cycle
             switch (Ins){
                 
@@ -173,23 +154,19 @@ struct CPU{
 
                 case INS_JSR:{
                     Word SubAddress = FetchWord(Cycles, memory); //one cycle
-                    memory.writeWord(PC - 1);
+                    memory.WriteWord(PC - 1, SP, Cycles);
                     Cycles--;
                     PC = SubAddress;
                     Cycles--;
                 }break;
 
 
->>>>>>> parent of ccd882d (code refactoring and organisation)
                 default:
                 {
                     printf("Instruction not handeled %d", Ins);
                 }break;
-<<<<<<< HEAD
-=======
             
             
->>>>>>> parent of ccd882d (code refactoring and organisation)
             }
         }
 
@@ -203,21 +180,9 @@ int main(){
     CPU cpu;
     cpu.Reset(mem);
     // start - inline a little program
-<<<<<<< HEAD
-<<<<<<< HEAD
-    mem[0xFFFC] = CPU::INS_LDA_IM;
-    mem[0xFFFD] = 0x42;
-    cpu.Execute(2,mem);
-=======
-=======
->>>>>>> parent of ccd882d (code refactoring and organisation)
     mem[0xFFFC] = CPU::INS_LDA_ZP;
     mem[0xFFFD] = 0x42;
     mem[0x0042] = 0x84;
     cpu.Execute(3,mem);
-<<<<<<< HEAD
->>>>>>> parent of ccd882d (code refactoring and organisation)
-=======
->>>>>>> parent of ccd882d (code refactoring and organisation)
     return 0;
 }
