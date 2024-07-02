@@ -77,56 +77,27 @@ struct CPU{
         return Data;
     }
 
-
-    //fetch byte but without incrementing PC
-    Byte ReadByte(u32& Cycles, Byte Address, Mem& memory){
-        Byte Data = memory[Address]; //get data from PC
-        Cycles--; //used up one cycle
-        return Data;
-    }
-
     //opcodes
-    static constexpr Byte 
-        INS_LDA_IM =0xA9, // Load Accumulator with Immediate
-        INS_LDA_ZP = 0xA5 // Load Accumulator with Zero Page (first 256 bytes of memory) 
-        ;
-
-    void LDAStatus(){
-        Z = (A == 0); // zero flag is set if A == 0
-        N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
-    }
+    static constexpr Byte INS_LDA_IM =0xA9; // Load Accumulator with Immediate
 
     // Cycles: number of cycles needed to execute some instruction
     void Execute(u32 Cycles, Mem& memory){
         
         while( Cycles > 0){
             //fetch next instruction
-            Byte Ins = FetchByte( Cycles, memory ); // 1 clock cycle
+            Byte Ins = FetchByte( Cycles, memory );
             switch (Ins){
-                
-                // executes the load accumulator with immediate instruction  
                 case INS_LDA_IM:{
                     // byte retrieved comes immediately after instruction opcode
-                    Byte Value = FetchByte (Cycles, memory); // 1 clock cycle
+                    Byte Value = FetchByte (Cycles, memory);
                     A = Value; // set accumulator to fetched value
-                    LDAStatus(); // default LDA flag setting
+                    Z = (A == 0); // zero flag is set if A == 0
+                    N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
                 }break;
-
-
-                // execute the load immediate with zero page instruction
-                case INS_LDA_ZP:{
-                    Byte ZeroPageAddress = FetchByte (Cycles, memory); // 1 clock cycle
-                    A = ReadByte(Cycles, ZeroPageAddress, memory); // 1 clock cycle 
-                    LDAStatus(); // default LDA flag setting
-
-                }break;
-
                 default:
                 {
                     printf("Instruction not handeled %d", Ins);
                 }break;
-            
-            
             }
         }
 
@@ -140,9 +111,8 @@ int main(){
     CPU cpu;
     cpu.Reset(mem);
     // start - inline a little program
-    mem[0xFFFC] = CPU::INS_LDA_ZP;
+    mem[0xFFFC] = CPU::INS_LDA_IM;
     mem[0xFFFD] = 0x42;
-    mem[0x0042] = 0x84;
-    cpu.Execute(3,mem);
+    cpu.Execute(2,mem);
     return 0;
 }
