@@ -34,6 +34,15 @@ struct Mem{
         return Data[Address];
     }
 
+<<<<<<< HEAD
+=======
+    // write 2 bytes 
+    void writeWord(Word Value, u32 Address, u32 Cycles){
+        Data[Address] = Value & 0xFF; //LSB
+        Data[Address + 1] = (Value >> 8); // MSB 
+        Cycles -= 2;
+    }
+>>>>>>> parent of ccd882d (code refactoring and organisation)
 
 };
 
@@ -77,14 +86,52 @@ struct CPU{
         return Data;
     }
 
+<<<<<<< HEAD
     //opcodes
     static constexpr Byte INS_LDA_IM =0xA9; // Load Accumulator with Immediate
+=======
+
+    //fetch byte but without incrementing PC
+    Byte ReadByte(u32& Cycles, Byte Address, Mem& memory){
+        Byte Data = memory[Address]; //get data from PC
+        Cycles--; //used up one cycle
+        return Data;
+    }
+
+    Word FetchWord(u32& Cycles, Mem& memory){
+        
+        //6502 is little endian (first byte read is the LSB of data)
+        Word Data = memory[PC]; //get data from PC
+        PC++; //Increment counter
+
+        Data |= (memory[PC] << 8); //shift by 8 bytes and or with result
+        PC++; //Increment counter
+        
+        Cycles-=2; //used up one cycle
+        return Data;
+    }
+
+
+    //opcodes
+    static constexpr Byte 
+        INS_LDA_IM = 0xA9, // Load Accumulator with Immediate
+        INS_LDA_ZP = 0xA5, // Load Accumulator with Zero Page (first 256 bytes of memory) 
+        INS_LDA_ZPX = 0xB5, // Load Accumulator with given zero page address and adding the current value of X to the address
+        INS_JSR = 0x20, // Jump to Subroutine
+        ;
+
+    void LDAStatus(){
+        Z = (A == 0); // zero flag is set if A == 0
+        N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
+    }
+>>>>>>> parent of ccd882d (code refactoring and organisation)
 
     // Cycles: number of cycles needed to execute some instruction
     void Execute(u32 Cycles, Mem& memory){
         
         while( Cycles > 0){
             //fetch next instruction
+<<<<<<< HEAD
             Byte Ins = FetchByte( Cycles, memory );
             switch (Ins){
                 case INS_LDA_IM:{
@@ -94,10 +141,55 @@ struct CPU{
                     Z = (A == 0); // zero flag is set if A == 0
                     N = (A & 0b10000000) > 0; // negative flag set if bit 7 of Acc is set
                 }break;
+=======
+            Byte Ins = FetchByte( Cycles, memory ); // 1 clock cycle
+            switch (Ins){
+                
+                // executes the load accumulator with immediate instruction  
+                case INS_LDA_IM:{
+                    // byte retrieved comes immediately after instruction opcode
+                    Byte Value = FetchByte (Cycles, memory); // 1 clock cycle
+                    A = Value; // set accumulator to fetched value
+                    LDAStatus(); // default LDA flag setting
+                }break;
+
+
+                // execute the load immediate with zero page instruction
+                case INS_LDA_ZP:{
+                    Byte ZeroPageAddr = FetchByte (Cycles, memory); // 1 clock cycle
+                    A = ReadByte(Cycles, ZeroPageAddr, memory); // 1 clock cycle 
+                    LDAStatus(); // default LDA flag setting
+
+                }break;
+
+                // get zero page address, add value of X register to it, and load immediate with the resulting address 
+                case INS_LDA_ZPX:{
+                    Byte ZeroPageAddr = FetchByte(Cycles, memory); 
+                    ZeroPageAddr += X; // doesnt handle overflow
+                    Cycles --; // clock cycle for addition
+                    A = ReadByte(Cycles, ZeroPageAddr, memory); // 1 clock cycle 
+                    LDAStatus(); // default LDA flag setting
+                }break;
+
+                case INS_JSR:{
+                    Word SubAddress = FetchWord(Cycles, memory); //one cycle
+                    memory.writeWord(PC - 1);
+                    Cycles--;
+                    PC = SubAddress;
+                    Cycles--;
+                }break;
+
+
+>>>>>>> parent of ccd882d (code refactoring and organisation)
                 default:
                 {
                     printf("Instruction not handeled %d", Ins);
                 }break;
+<<<<<<< HEAD
+=======
+            
+            
+>>>>>>> parent of ccd882d (code refactoring and organisation)
             }
         }
 
@@ -111,8 +203,15 @@ int main(){
     CPU cpu;
     cpu.Reset(mem);
     // start - inline a little program
+<<<<<<< HEAD
     mem[0xFFFC] = CPU::INS_LDA_IM;
     mem[0xFFFD] = 0x42;
     cpu.Execute(2,mem);
+=======
+    mem[0xFFFC] = CPU::INS_LDA_ZP;
+    mem[0xFFFD] = 0x42;
+    mem[0x0042] = 0x84;
+    cpu.Execute(3,mem);
+>>>>>>> parent of ccd882d (code refactoring and organisation)
     return 0;
 }
