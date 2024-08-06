@@ -1,0 +1,6 @@
+.vscode
+main_6502
+CMakeCache.txt
+_deps/
+cmake_install.cmake
+
