@@ -2,5 +2,6 @@
 main_6502
 CMakeCache.txt
 _deps/
+CMakeFiles/
 cmake_install.cmake
 
