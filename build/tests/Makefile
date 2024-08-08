@@ -175,6 +175,30 @@ Emulator_tst/fast:
 	cd /home/alialj/Programs/Emulator/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/Emulator_tst.dir/build.make tests/CMakeFiles/Emulator_tst.dir/build
 .PHONY : Emulator_tst/fast
 
+6502tests.o: 6502tests.cpp.o
+.PHONY : 6502tests.o
+
+# target to build an object file
+6502tests.cpp.o:
+	cd /home/alialj/Programs/Emulator/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/Emulator_tst.dir/build.make tests/CMakeFiles/Emulator_tst.dir/6502tests.cpp.o
+.PHONY : 6502tests.cpp.o
+
+6502tests.i: 6502tests.cpp.i
+.PHONY : 6502tests.i
+
+# target to preprocess a source file
+6502tests.cpp.i:
+	cd /home/alialj/Programs/Emulator/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/Emulator_tst.dir/build.make tests/CMakeFiles/Emulator_tst.dir/6502tests.cpp.i
+.PHONY : 6502tests.cpp.i
+
+6502tests.s: 6502tests.cpp.s
+.PHONY : 6502tests.s
+
+# target to generate assembly for a file
+6502tests.cpp.s:
+	cd /home/alialj/Programs/Emulator/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/Emulator_tst.dir/build.make tests/CMakeFiles/Emulator_tst.dir/6502tests.cpp.s
+.PHONY : 6502tests.cpp.s
+
 main_6502.o: main_6502.cpp.o
 .PHONY : main_6502.o
 
@@ -212,6 +236,9 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... Emulator_tst"
+	@echo "... 6502tests.o"
+	@echo "... 6502tests.i"
+	@echo "... 6502tests.s"
 	@echo "... main_6502.o"
 	@echo "... main_6502.i"
 	@echo "... main_6502.s"
