@@ -6,7 +6,7 @@ using Byte = unsigned char;
 using Word = unsigned short;
 
 using u32 = unsigned int;
-
+using s32 = signed int;
 
 //memory
 struct Mem{
@@ -35,7 +35,7 @@ struct Mem{
     }
 
     // write 2 bytes 
-    void WriteWord(Word Value, u32 Address, u32 Cycles){
+    void WriteWord(Word Value, u32 Address, s32& Cycles){
         Data[Address] = Value & 0xFF; //LSB
         Data[Address + 1] = (Value >> 8); // MSB 
         Cycles -= 2;
@@ -76,7 +76,7 @@ struct CPU{
 
     }
 
-    Byte FetchByte(u32& Cycles, Mem& memory){
+    Byte FetchByte(s32& Cycles, Mem& memory){
         Byte Data = memory[PC]; //get data from PC
         PC++; //Increment counter
         Cycles--; //used up one cycle
@@ -85,13 +85,13 @@ struct CPU{
 
 
     //fetch byte but without incrementing PC
-    Byte ReadByte(u32& Cycles, Byte Address, Mem& memory){
+    Byte ReadByte(s32& Cycles, Byte Address, Mem& memory){
         Byte Data = memory[Address]; //get data from PC
         Cycles--; //used up one cycle
         return Data;
     }
 
-    Word FetchWord(u32& Cycles, Mem& memory){
+    Word FetchWord(s32& Cycles, Mem& memory){
         
         //6502 is little endian (first byte read is the LSB of data)
         Word Data = memory[PC]; //get data from PC
@@ -110,7 +110,8 @@ struct CPU{
         INS_LDA_IM = 0xA9, // Load Accumulator with Immediate
         INS_LDA_ZP = 0xA5, // Load Accumulator with Zero Page (first 256 bytes of memory) 
         INS_LDA_ZPX = 0xB5, // Load Accumulator with given zero page address and adding the current value of X to the address
-        INS_JSR = 0x20 // Jump to Subroutine
+        INS_JSR = 0x20, // Jump to Subroutine
+        INS_LDA_ABS = 0xAD // Load Accumulator with value in given address
         ;
 
     void LDAStatus(){
@@ -119,8 +120,11 @@ struct CPU{
     }
 
     // Cycles: number of cycles needed to execute some instruction
-    void Execute(u32 Cycles, Mem& memory){
+    // return: number of cycles used
+    s32 Execute(s32 Cycles, Mem& memory){
         
+        const s32 CyclesRequested = Cycles;
+
         while( Cycles > 0){
             //fetch next instruction
             Byte Ins = FetchByte( Cycles, memory ); // 1 clock cycle
@@ -163,12 +167,13 @@ struct CPU{
 
                 default:
                 {
-                    printf("Instruction not handeled %d", Ins);
+                    printf("Instruction 0x%x not handeled\n", Ins);
                 }break;
             
             
             }
         }
+        return CyclesRequested - Cycles;
 
     }
 
