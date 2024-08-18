@@ -107,11 +107,14 @@ struct CPU{
 
     //opcodes
     static constexpr Byte 
-        INS_LDA_IM = 0xA9, // Load Accumulator with Immediate
-        INS_LDA_ZP = 0xA5, // Load Accumulator with Zero Page (first 256 bytes of memory) 
-        INS_LDA_ZPX = 0xB5, // Load Accumulator with given zero page address and adding the current value of X to the address
-        INS_JSR = 0x20, // Jump to Subroutine
-        INS_LDA_ABS = 0xAD // Load Accumulator with value in given address
+        INS_LDA_IM = 0xA9,      // Load Accumulator with Immediate
+        INS_LDA_ZP = 0xA5,      // Load Accumulator with Zero Page (first 256 bytes of memory) 
+        INS_LDA_ZPX = 0xB5,     // Load Accumulator with given zero page address and adding the current value of X to the address
+        INS_LDA_ABS = 0xAD,     // Load Accumulator with value in given address
+        INS_LDA_ABSX = 0xBD,    // Load Accumulator with value in address stored in X register
+        INS_LDA_ABSY = 0xB9,    // Load Accumulator with value in address stored in Y register
+        INS_LDA_INDX = 0xA1,    // Load Accumulator with val stored in address given by: given address + X  
+        INS_JSR = 0x20          // Jump to Subroutine
         ;
 
     void LDAStatus(){
